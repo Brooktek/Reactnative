@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 70,
-    aspectRatio: 1.5, // Maintain a consistent aspect ratio
+    aspectRatio: 1.5,
   },
   selectedTimeSlot: {
     backgroundColor: '#4fc3f7',

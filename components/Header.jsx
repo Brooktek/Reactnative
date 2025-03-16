@@ -24,7 +24,6 @@ const Header = ({
   const { width } = Dimensions.get('window');
   const isSmallScreen = width < 380;
 
-  // Generate dropdown options
   const dateOptions = Array.from({ length: 31 }, (_, i) => i + 1);
   const monthOptions = [
     'January', 'February', 'March', 'April', 'May', 'June', 
@@ -32,7 +31,6 @@ const Header = ({
   ];
   const yearOptions = Array.from({ length: 10 }, (_, i) => 2020 + i);
 
-  // Close all dropdowns
   const closeAllDropdowns = () => {
     setShowDateDropdown(false);
     setShowMonthDropdown(false);

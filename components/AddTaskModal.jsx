@@ -23,7 +23,6 @@ const AddTaskModal = ({ visible, selectedTimeSlots, onClose, onSubmit }) => {
     setTaskText('');
   };
 
-  // Format the selected time slots for display in the modal
   const getSelectedBoxesText = () => {
     if (selectedTimeSlots.length === 0) return "";
     if (selectedTimeSlots.length === 1) return selectedTimeSlots[0].text;
