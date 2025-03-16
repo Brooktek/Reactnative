@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "components/TimeSlot.jsx", "components/Header.jsx", "components/AddTaskModal.jsx", "app/(tabs)/index.jsx"  ]
 }
