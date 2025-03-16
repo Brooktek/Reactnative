@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Header from '../../components/Header';
 import TimeSlot, { numColumns } from '../../components/TimeSlot';
 import AddTaskModal from '../../components/AddTaskModal';
-import { generateTimeSlots } from '../../utils/timeUtils';
+import { generateTimeSlots } from '../../utils/timeUtil';
 
 export default function TimeSlotScreen() {
   const [selectedDate, setSelectedDate] = useState(16);
@@ -93,7 +93,8 @@ export default function TimeSlotScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* Header */}
+  {/* Header */}
+    <View style={styles.headerContainer}>
       <Header 
         selectedDate={selectedDate}
         selectedMonth={selectedMonth}
@@ -102,6 +103,7 @@ export default function TimeSlotScreen() {
         onMonthChange={setSelectedMonth}
         onYearChange={setSelectedYear}
       />
+    </View>
       
       {/* Time Slots Grid */}
       <FlatList
@@ -151,10 +153,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: 20,
+  },
+  headerContainer: {
+    paddingHorizontal: 10,
   },
   timeSlotGrid: {
     padding: 10,
-    paddingBottom: 80, // Add padding at the bottom to avoid action buttons
+    paddingBottom: 80, 
   },
   emptyItem: {
     backgroundColor: 'transparent',
