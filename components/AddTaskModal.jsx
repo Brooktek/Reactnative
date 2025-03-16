@@ -9,6 +9,7 @@ import {
   Dimensions,
   ScrollView
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 
 const AddTaskModal = ({ visible, selectedTimeSlots, onClose, onSubmit }) => {
@@ -57,11 +58,19 @@ const AddTaskModal = ({ visible, selectedTimeSlots, onClose, onSubmit }) => {
             value={taskText}
             onChangeText={setTaskText}
           />
-          
-          <TouchableOpacity style={styles.categoryDropdown}>
-            <Text>{taskCategory}</Text>
-            <Ionicons name="chevron-down" size={16} color="#000" />
-          </TouchableOpacity>
+
+          <View style={styles.categoryPickerContainer}>
+            <Picker
+              selectedValue={taskCategory}
+              style={styles.categoryPicker}
+              onValueChange={(itemValue) => setTaskCategory(itemValue)}
+            >
+              <Picker.Item label="Work" value="Work" />
+              <Picker.Item label="Personal" value="Personal" />
+              <Picker.Item label="Meeting" value="Meeting" />
+              <Picker.Item label="Other" value="Other" />
+            </Picker>
+          </View>
           
           <View style={styles.modalButtons}>
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -175,6 +184,17 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  categoryPickerContainer: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  categoryPicker: {
+    width: '100%',
+    height: 50,
   },
 });
 
