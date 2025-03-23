@@ -9,7 +9,19 @@ export const TaskProvider = ({ children }) => {
 
   // Function to add a new task
   const addTask = (task) => {
-    setTasks([...tasks, task]);
+    const newTask = {
+      id: Date.now().toString(),
+      task: task.task || 'No task name',
+      tag: task.category,
+      color: task.category === 'Work' ? '#FF0000' : 
+             task.category === 'Personal' ? '#00FF00' : 
+             task.category === 'Meeting' ? '#0000FF' : '#999999',
+      selectedBoxes: task.timeSlots.join(', '),
+      totalTime: task.timeSlots.length * 0.5, // Each slot is 30 minutes
+      timestamp: new Date().toLocaleString()
+    };
+    
+    setTasks(prevTasks => [...prevTasks, newTask]);
   };
 
   // Function to clear all tasks
