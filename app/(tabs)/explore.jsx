@@ -18,7 +18,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const dummyTasks = [
   {
     id: '1',
-    task: 'No task name',
+    task: 'Work',
     tag: 'Work',
     color: '#FF0000',
     selectedBoxes: '6, 7',
@@ -30,7 +30,7 @@ const dummyTasks = [
     task: 'Team meeting',
     tag: 'Meeting',
     color: '#0000FF',
-    selectedBoxes: '10, 11',
+    selectedBoxes: '10, 11, 12',
     totalTime: 2,
     timestamp: '3/23/2025, 10:15:22 AM'
   },
@@ -42,6 +42,15 @@ const dummyTasks = [
     selectedBoxes: '17, 18',
     totalTime: 1.5,
     timestamp: '3/23/2025, 5:30:45 PM'
+  },
+  {
+    id: '4',
+    task: 'Gym ',
+    tag: 'guu',
+    color: 'pink',
+    selectedBoxes: '17',
+    totalTime: 2,
+    timestamp: '3/23/2025, 6:45:30 PM'
   }
 ];
 
@@ -118,6 +127,7 @@ const AnalyticsScreen = ({ navigation }) => {
             if (tag === 'Work') return () => '#FF0000';
             if (tag === 'Personal') return () => '#00FF00';
             if (tag === 'Meeting') return () => '#0000FF';
+            if (tag === 'guu') return () => 'pink';
             return () => '#999999';
           })
         }
@@ -154,6 +164,7 @@ const AnalyticsScreen = ({ navigation }) => {
       if (tag === 'Work') color = '#FF0000';
       if (tag === 'Personal') color = '#00FF00';
       if (tag === 'Meeting') color = '#0000FF';
+      if (tag === 'guu') color = 'pink';
 
       return {
         name: tag,
