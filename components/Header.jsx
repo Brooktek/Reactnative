@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateDropdown from './DateDropdown';
+import { useRouter } from 'expo-router';
 
 const Header = ({ 
   selectedDate, 
@@ -36,6 +37,13 @@ const Header = ({
     setShowMonthDropdown(false);
     setShowYearDropdown(false);
   };
+  const router = useRouter();
+
+  const navigateToAnalytics = () => {
+    // This will navigate to the 'explore' page in the app folder (app/explore.js)
+    router.push('/explore');
+  };
+
 
   return (
     <View style={styles.header}>
@@ -79,7 +87,9 @@ const Header = ({
       </View>
       
       <View style={styles.headerRight}>
-        <TouchableOpacity style={styles.analyticsButton}>
+        <TouchableOpacity style={styles.analyticsButton}
+          onPress={navigateToAnalytics}
+        >
           <Text style={styles.analyticsButtonText}>
             {isSmallScreen ? 'Analytics' : 'View Analytics'}
           </Text>
