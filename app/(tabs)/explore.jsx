@@ -14,6 +14,9 @@ import { Picker } from '@react-native-picker/picker';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
+
 // Dummy data for analytics
 const dummyTasks = [
   {
@@ -61,7 +64,6 @@ const AnalyticsScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [tasks, setTasks] = useState([]);
   const [showAnalytics, setShowAnalytics] = useState(true);
-  const screenWidth = Dimensions.get('window').width;
 
   // Filter tasks based on selected category
   useEffect(() => {
@@ -318,7 +320,7 @@ const AnalyticsScreen = ({ navigation }) => {
                 <Text style={styles.chartTitle}>Total Time Spent per Tag</Text>
                 <BarChart
                   data={prepareBarChartData()}
-                  width={screenWidth * 0.45}
+                  width={screenWidth * 0.9}
                   height={220}
                   chartConfig={{
                     backgroundColor: '#ffffff',
@@ -347,7 +349,7 @@ const AnalyticsScreen = ({ navigation }) => {
                     ...item,
                     population: item.count,
                   }))}
-                  width={screenWidth * 0.45}
+                  width={screenWidth * 0.9}
                   height={220}
                   chartConfig={{
                     backgroundColor: '#ffffff',
@@ -418,13 +420,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
     height: 40,
-    width: 100,
+    width: screenWidth * 0.3, // Adjust width based on screen size
     backgroundColor: '#ffffff',
     justifyContent: 'center',
   },
   picker: {
     height: 40,
-    width: 100,
+    width: '100%',
   },
   searchButton: {
     backgroundColor: '#6c63ff',
@@ -498,6 +500,7 @@ const styles = StyleSheet.create({
   },
   chartsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: 15,
   },
@@ -508,6 +511,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    width: screenWidth * 0.9, // Adjust width based on screen size
   },
   chartTitle: {
     color: '#333333',
@@ -524,8 +528,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   calendarDay: {
-    width: 30,
-    height: 30,
+    width: screenWidth * 0.08, // Adjust width based on screen size
+    height: screenWidth * 0.08, // Adjust height based on screen size
     margin: 3,
     borderRadius: 4,
   },
