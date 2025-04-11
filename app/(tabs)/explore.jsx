@@ -218,9 +218,10 @@ const AnalyticsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.welcomeContainer}>
+        {/* <View style={styles.welcomeContainer}>
           {isMobile() ? (
             <HamburgerMenu navigation={navigation} />
           ) : (
@@ -229,7 +230,7 @@ const AnalyticsScreen = ({ navigation }) => {
             </View>
           )}
           <Text style={styles.welcomeText}>Welcome</Text>
-        </View>
+        </View> */}
 
 
         <View style={styles.filterContainer}>
