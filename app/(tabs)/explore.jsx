@@ -13,8 +13,6 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { isMobile } from '../../utils/device'; 
-import HamburgerMenu from '../../components/HamburgerMenu'; 
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -44,7 +42,7 @@ const dummyTasks = [
     task: 'Gym workout',
     tag: 'Personal',
     color: '#00FF00',
-    selectedBoxes: '17, 18, 19',
+    selectedBoxes: '17, 18',
     totalTime: 1.5,
     timestamp: '3/23/2025, 5:30:45 PM'
   },
@@ -65,7 +63,7 @@ const AnalyticsScreen = ({ navigation }) => {
   const [selectedYear, setSelectedYear] = useState('2025');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [tasks, setTasks] = useState([]);
-  const [showAnalytics, setShowAnalytics] = useState(true); 
+  const [showAnalytics, setShowAnalytics] = useState(true);
 
   // Filter tasks based on selected category
   useEffect(() => {
@@ -221,16 +219,11 @@ const AnalyticsScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.welcomeContainer}>
-          {isMobile() ? (
-            <HamburgerMenu navigation={navigation} />
-          ) : (
-            <View style={styles.avatarContainer}>
-              <Icon name="person" size={24} color="white" />
-            </View>
-          )}
+          <View style={styles.avatarContainer}>
+            <Icon name="person" size={24} color="white" />
+          </View>
           <Text style={styles.welcomeText}>Welcome</Text>
         </View>
-
 
         <View style={styles.filterContainer}>
           <View style={styles.pickerContainer}>
@@ -239,6 +232,7 @@ const AnalyticsScreen = ({ navigation }) => {
               style={styles.picker}
               onValueChange={(itemValue) => setSelectedDay(itemValue)}
             >
+              <Picker.Item label="23" value="23" />
               {[...Array(31)].map((_, i) => (
                 <Picker.Item key={i+1} label={`${i+1}`} value={`${i+1}`} />
               ))}
@@ -251,7 +245,8 @@ const AnalyticsScreen = ({ navigation }) => {
               style={styles.picker}
               onValueChange={(itemValue) => setSelectedMonth(itemValue)}
             >
-              {['January', 'February', 'March' , 'April', 'May', 'June', 'July', 
+              <Picker.Item label="March" value="March" />
+              {['January', 'February', 'April', 'May', 'June', 'July', 
                 'August', 'September', 'October', 'November', 'December'].map(month => (
                 <Picker.Item key={month} label={month} value={month} />
               ))}
@@ -264,7 +259,8 @@ const AnalyticsScreen = ({ navigation }) => {
               style={styles.picker}
               onValueChange={(itemValue) => setSelectedYear(itemValue)}
             >
-              {[2023, 2024, 2025, 2026, 2027, 2028].map(year => (
+              <Picker.Item label="2025" value="2025" />
+              {[2023, 2024, 2026, 2027, 2028].map(year => (
                 <Picker.Item key={year} label={`${year}`} value={`${year}`} />
               ))}
             </Picker>
@@ -298,8 +294,6 @@ const AnalyticsScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-
-      
 
       <ScrollView style={styles.content}>
         {/* Tasks Table */}
