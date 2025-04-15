@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const Calendar = ({ onDateSelect }) => {
-  const [viewMode, setViewMode] = useState("month") // 'year', 'month', 'week', 'day'
+  const [viewMode, setViewMode] = useState("month") 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedDate, setSelectedDate] = useState(new Date().getDate())

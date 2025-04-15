@@ -18,14 +18,24 @@ import { useNavigation } from "@react-navigation/native"
 import Calendar from "../../components/Calendar"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 
-// Generate time slots from 8 AM to 8 PM
+
+// Generate time slots from 12 AM to 12 AM
 const generateTimeSlots = () => {
   const timeSlots = []
-  for (let hour = 8; hour < 20; hour++) {
-    const period = hour >= 12 ? "PM" : "AM"
-    const displayHour = hour > 12 ? hour - 12 : hour
 
-    // Add two 30-minute slots per hour
+  for (let hour = 0; hour < 24; hour++) {
+
+    let period
+    if (hour < 6) {
+      period = "AM"
+    } else if (hour < 18) {
+      period = "PM"
+    } else {
+      period = "AM"
+    }
+
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12
+
     timeSlots.push({
       id: `slot-${hour}-00`,
       time: `${displayHour}:00 ${period}`,
@@ -41,6 +51,7 @@ const generateTimeSlots = () => {
 
   return timeSlots
 }
+
 
 const TimeSlotScreen = () => {
   const navigation = useNavigation()
