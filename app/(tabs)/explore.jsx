@@ -28,6 +28,7 @@ const AnalyticsScreen = () => {
   const [showAnalytics, setShowAnalytics] = useState(true)
   const [dateRangeFilter, setDateRangeFilter] = useState("day") 
   const screenWidth = Dimensions.get("window").width
+  const [showAllTasks, setShowAllTasks] = useState(false)
 
   const monthNames = [
     "January",
@@ -388,44 +389,50 @@ const AnalyticsScreen = () => {
             </View>
 
             {/* Task List Summary */}
-            {tasks.length > 0 && (
-              <View style={styles.taskListCard}>
-                <Text style={styles.cardTitle}>Recent Tasks</Text>
-                <View style={styles.taskList}>
-                  {tasks.slice(0, 5).map((task) => (
-                    <View key={task.id} style={styles.taskItem}>
-                      <View style={styles.taskContent}>
-                        <Text style={styles.taskText}>{task.task}</Text>
-                        <Text style={styles.taskDetails}>
-                          {new Date(task.date).toLocaleDateString()} • {task.timeSlots.join(", ")}
-                        </Text>
-                      </View>
-                      <View
-                        style={[
-                          styles.categoryBadge,
-                          {
-                            backgroundColor:
-                              task.category === "Work"
-                                ? "#FF5252"
-                                : task.category === "Personal"
-                                  ? "#4CAF50"
-                                  : "#2196F3",
-                          },
-                        ]}
-                      >
-                        <Text style={styles.categoryText}>{task.category}</Text>
-                      </View>
+                      {tasks.length > 0 && (
+            <View style={styles.taskListCard}>
+              <Text style={styles.cardTitle}>Recent Tasks</Text>
+              <View style={styles.taskList}>
+                {(showAllTasks ? tasks : tasks.slice(0, 4)).map((task) => (
+                  <View key={task.id} style={styles.taskItem}>
+                    <View style={styles.taskContent}>
+                      <Text style={styles.taskText}>{task.task}</Text>
+                      <Text style={styles.taskDetails}>
+                        {new Date(task.date).toLocaleDateString()} • {task.timeSlots.join(", ")}
+                      </Text>
                     </View>
-                  ))}
+                    <View
+                      style={[
+                        styles.categoryBadge,
+                        {
+                          backgroundColor:
+                            task.category === "Work"
+                              ? "#FF5252"
+                              : task.category === "Personal"
+                              ? "#4CAF50"
+                              : "#2196F3",
+                        },
+                      ]}
+                    >
+                      <Text style={styles.categoryText}>{task.category}</Text>
+                    </View>
+                  </View>
+                ))}
 
-                  {tasks.length > 5 && (
-                    <TouchableOpacity style={styles.showMoreButton}>
-                      <Text style={styles.showMoreText}>Show more tasks</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
+                {tasks.length > 5 && (
+                  <TouchableOpacity
+                    style={styles.showMoreButton}
+                    onPress={() => setShowAllTasks(!showAllTasks)}
+                  >
+                    <Text style={styles.showMoreText}>
+                      {showAllTasks ? "Hide tasks" : "Show more tasks"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
-            )}
+            </View>
+          )}
+
 
             {/* Analytics Section */}
             {showAnalytics && (
