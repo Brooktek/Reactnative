@@ -26,10 +26,9 @@ const AnalyticsScreen = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showAnalytics, setShowAnalytics] = useState(true)
-  const [dateRangeFilter, setDateRangeFilter] = useState("day") // "day", "week", "month", "year"
+  const [dateRangeFilter, setDateRangeFilter] = useState("day") 
   const screenWidth = Dimensions.get("window").width
 
-  // Month names for dropdown and display
   const monthNames = [
     "January",
     "February",
@@ -303,7 +302,7 @@ const AnalyticsScreen = () => {
                 dropdownIconColor="#fff"
               >
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                  <Picker.Item key={day} label={day.toString()} value={day.toString()} color="#fff" />
+                  <Picker.Item key={day} label={day.toString()} value={day.toString()} color="#000000" />
                 ))}
               </Picker>
             </View>
@@ -316,7 +315,7 @@ const AnalyticsScreen = () => {
                 dropdownIconColor="#fff"
               >
                 {monthNames.map((month, index) => (
-                  <Picker.Item key={month} label={month} value={index} color="#fff" />
+                  <Picker.Item key={month} label={month} value={index} color="#000000" />
                 ))}
               </Picker>
             </View>
@@ -329,7 +328,7 @@ const AnalyticsScreen = () => {
                 dropdownIconColor="#fff"
               >
                 {[2023, 2024, 2025, 2026, 2027, 2028].map((year) => (
-                  <Picker.Item key={year} label={year.toString()} value={year.toString()} color="#fff" />
+                  <Picker.Item key={year} label={year.toString()} value={year.toString()} color="#000000" />
                 ))}
               </Picker>
             </View>
@@ -343,10 +342,10 @@ const AnalyticsScreen = () => {
                 onValueChange={(itemValue) => setSelectedCategory(itemValue)}
                 dropdownIconColor="#fff"
               >
-                <Picker.Item label="All" value="All" color="#fff" />
-                <Picker.Item label="Work" value="Work" color="#fff" />
-                <Picker.Item label="Personal" value="Personal" color="#fff" />
-                <Picker.Item label="Meeting" value="Meeting" color="#fff" />
+                <Picker.Item label="All" value="All" color="#000000" />
+                <Picker.Item label="Work" value="Work" color="#000000" />
+                <Picker.Item label="Personal" value="Personal" color="#000000" />
+                <Picker.Item label="Meeting" value="Meeting" color="#000000" />
               </Picker>
             </View>
 
@@ -492,7 +491,7 @@ const AnalyticsScreen = () => {
         )}
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navButton} onPress={goBack}>
           <Ionicons name="calendar" size={24} color="#888" />
@@ -502,7 +501,7 @@ const AnalyticsScreen = () => {
           <Ionicons name="analytics" size={24} color="#6c63ff" />
           <Text style={[styles.navText, styles.activeNavText]}>Analytics</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </SafeAreaView>
   )
 }
@@ -510,6 +509,7 @@ const AnalyticsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 20,
     backgroundColor: "#121212",
   },
   header: {
@@ -580,8 +580,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   picker: {
-    height: 40,
-    width: 100,
+    height: 100,
+    width: 120,
     color: "#fff",
   },
   hideButton: {

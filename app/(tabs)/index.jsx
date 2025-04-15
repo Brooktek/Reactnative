@@ -51,7 +51,7 @@ const TimeSlotScreen = () => {
   const [taskText, setTaskText] = useState("")
   const [taskCategory, setTaskCategory] = useState("Work")
   const [tasks, setTasks] = useState([])
-  const [selectedView, setSelectedView] = useState("calendar") // "calendar" or "timeSlots"
+  const [selectedView, setSelectedView] = useState("calendar") 
 
   // Load tasks from storage when component mounts
   useEffect(() => {
@@ -182,7 +182,7 @@ const TimeSlotScreen = () => {
   }
 
   const goToAnalytics = () => {
-    navigation.navigate("Analytics")
+    navigation.navigate("explore")
   }
 
   const renderTimeSlot = ({ item }) => {
@@ -402,6 +402,7 @@ const TimeSlotScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: StatusBar.currentHeight,
     backgroundColor: "#121212",
   },
   header: {
