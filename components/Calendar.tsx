@@ -315,24 +315,7 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
         {renderCalendarGrid()}
       </Animated.View>
 
-      {/* Add event button */}
-      <View style={styles.addEventContainer}>
-        <TouchableOpacity
-          style={[styles.addEventButton, { backgroundColor: colors.surfaceVariant }]}
-          onPress={() => handleDateSelect(selectedDate)}
-        >
-          <Text style={[styles.addEventText, { color: colors.textSecondary }]}>
-            Add event on {selectedDate} {monthNames[currentMonth]}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.floatingButton, { backgroundColor: colors.surfaceVariant }]}
-          onPress={() => handleDateSelect(selectedDate)}
-        >
-          <Ionicons name="add" size={24} color={colors.text} />
-        </TouchableOpacity>
-      </View>
+     
     </View>
   )
 }
@@ -391,7 +374,7 @@ const styles = StyleSheet.create({
   },
   dateCell: {
     width: width / 7,
-    height: 60,
+    height: 80,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
@@ -409,39 +392,14 @@ const styles = StyleSheet.create({
   },
   taskIndicator: {
     position: "absolute",
-    bottom: 5,
+    bottom: 15,
     width: 6,
     height: 6,
     borderRadius: 3,
   },
   todayIndicator: {
     position: "absolute",
-    bottom: 5,
-    alignItems: "center",
-  },
-  addEventContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    paddingTop: 10,
-  },
-  addEventButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    marginRight: 15,
-  },
-  addEventText: {
-    fontSize: 16,
-  },
-  floatingButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
+    bottom: 55,
     alignItems: "center",
   },
 })

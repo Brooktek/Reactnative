@@ -58,22 +58,19 @@ export default function TimeSlotScreen() {
   const [taskText, setTaskText] = useState("")
   const [taskCategory, setTaskCategory] = useState("Work")
   const [tasks, setTasks] = useState([])
-  const [selectedView, setSelectedView] = useState("calendar") // "calendar" or "timeSlots"
+  const [selectedView, setSelectedView] = useState("calendar") 
   const [editingTaskId, setEditingTaskId] = useState(null)
   const [sidebarVisible, setSidebarVisible] = useState(false)
   const [sidebarAnimation] = useState(new Animated.Value(-width * 0.7))
 
-  // Load tasks from storage when component mounts
   useEffect(() => {
     loadTasks()
   }, [])
 
-  // Load tasks whenever selected date changes
   useEffect(() => {
     loadTasks()
   }, [selectedDate])
 
-  // Animate sidebar
   useEffect(() => {
     Animated.timing(sidebarAnimation, {
       toValue: sidebarVisible ? 0 : -width * 0.7,
@@ -82,7 +79,6 @@ export default function TimeSlotScreen() {
     }).start()
   }, [sidebarVisible])
 
-  // Load tasks from AsyncStorage
   const loadTasks = async () => {
     try {
       const dateStr = selectedDate.toDateString()
@@ -90,11 +86,9 @@ export default function TimeSlotScreen() {
 
       if (storedTasksJson) {
         const storedTasks = JSON.parse(storedTasksJson)
-        // Filter tasks for the selected date
         const tasksForDate = storedTasks.filter((task) => task.date === dateStr)
         setTasks(tasksForDate)
 
-        // Highlight time slots that have tasks
         updateTimeSlotHighlights(tasksForDate)
       }
     } catch (error) {
@@ -102,20 +96,15 @@ export default function TimeSlotScreen() {
     }
   }
 
-  // Modify the handleDateSelect function to automatically switch to time slots view
   const handleDateSelect = (date) => {
     setSelectedDate(date)
-    // Clear selected time slots when date changes
     setSelectedTimeSlots([])
-    // Automatically switch to time slots view when a date is selected
     setSelectedView("timeSlots")
   }
 
-  // Update the updateTimeSlotHighlights function to include category colors
   const updateTimeSlotHighlights = (tasksForDate) => {
     const updatedTimeSlots = generateTimeSlots()
 
-    // Create a map of time slots with their tasks and categories
     const slotTaskMap = new Map()
 
     tasksForDate.forEach((task) => {
@@ -128,7 +117,6 @@ export default function TimeSlotScreen() {
       })
     })
 
-    // Update time slots with occupation status and category
     updatedTimeSlots.forEach((slot) => {
       if (slotTaskMap.has(slot.id)) {
         const taskInfo = slotTaskMap.get(slot.id)
@@ -165,9 +153,7 @@ export default function TimeSlotScreen() {
     setModalVisible(true)
   }
 
-  const goToAnalytics = () => {
-    router.push("/(tabs)/explore")
-  }
+
 
   const handleEditPress = () => {
     if (selectedTimeSlots.length === 0) {
@@ -183,17 +169,14 @@ export default function TimeSlotScreen() {
       return
     }
 
-    // Find tasks for the selected time slots
     const tasksToEdit = tasks.filter((task) =>
       task.timeSlotIds.some((id) => selectedTimeSlots.map((slot) => slot.id).includes(id)),
     )
 
     if (tasksToEdit.length > 0) {
-      // Pre-fill the form with the first task's data
       setTaskText(tasksToEdit[0].task)
       setTaskCategory(tasksToEdit[0].category)
       setModalVisible(true)
-      // Store the task ID being edited
       setEditingTaskId(tasksToEdit[0].id)
     }
   }
@@ -204,7 +187,6 @@ export default function TimeSlotScreen() {
       return
     }
 
-    // Check if selected time slots have tasks
     const hasTask = selectedTimeSlots.some((slot) => timeSlots.find((ts) => ts.id === slot.id)?.hasTask)
 
     if (!hasTask) {
@@ -343,9 +325,6 @@ export default function TimeSlotScreen() {
     }
   }
 
-  const toggleSidebar = () => {
-    setSidebarVisible(!sidebarVisible)
-  }
 
   // Get category color
   const getCategoryColor = (category) => {
@@ -497,20 +476,6 @@ export default function TimeSlotScreen() {
         ) : (
           /* Time Slots View */
           <View style={styles.timeSlotsContainer}>
-            <Text style={[styles.dateHeader, { color: colors.text }]}>{selectedDate.toDateString()}</Text>
-
-            {tasks.length > 0 && (
-              <View style={styles.tasksForDay}>
-                <Text style={[styles.tasksForDayTitle, { color: colors.text }]}>Tasks for today:</Text>
-                <FlatList
-                  data={tasks}
-                  renderItem={renderTaskItem}
-                  keyExtractor={(item) => item.id}
-                  horizontal={false}
-                  style={styles.tasksList}
-                />
-              </View>
-            )}
 
             <Text style={[styles.timeSlotsTitle, { color: colors.text }]}>Select Time Slots:</Text>
             <FlatList

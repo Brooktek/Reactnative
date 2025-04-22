@@ -1,18 +1,26 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useTheme } from "@/contexts/ThemeContext"
+import { router } from "expo-router"
+import Calendar from "./Calendar"
+import { useState } from "react"
+
 
 export default function CustomHeader({ navigation }) {
   const { colors, toggleTheme } = useTheme()
+  const [sidebarVisible, setSidebarVisible] = useState(false)
+  const [selectedView, setSelectedView] = useState("calendar") 
 
-  const toggleSidebar = () => {
-    // Implement toggleSidebar logic
-    console.log("Sidebar toggled")
-  }
+
 
   const goToAnalytics = () => {
-    navigation.navigate("explore")
+    router.push("/(tabs)/explore")
   }
+
+    const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible)
+  }
+
 
   return (
     <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
@@ -28,9 +36,10 @@ export default function CustomHeader({ navigation }) {
           <Ionicons name="analytics" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.headerButton} onPress={toggleTheme}>
-          <Text style={[styles.headerButtonText, { color: colors.text }]}>C</Text>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.headerButton} onPress={() => router.push("")}>
+  <Text style={[styles.headerButtonText, { color: colors.text }]}>C</Text>
+</TouchableOpacity>
+
       </View>
     </View>
   )
