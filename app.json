@@ -8,6 +8,8 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "hideAppLoading": true,
+
     "ios": {
       "supportsTablet": true
     },

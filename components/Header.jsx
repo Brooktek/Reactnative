@@ -81,9 +81,7 @@ const Header = ({
           <Ionicons name="chevron-down" size={16} color="#000" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={[styles.searchButton, isSmallScreen && styles.smallButton]}>
-          <Text style={styles.searchButtonText}>Search</Text>
-        </TouchableOpacity>
+        
       </View>
 
       {/* Right Section */}
