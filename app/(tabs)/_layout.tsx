@@ -1,42 +1,39 @@
-"use client"
+// app/_layout.tsx or app/(stack)/_layout.tsx
+"use client";
 
-import { Tabs } from "expo-router"
-import { Ionicons } from "@expo/vector-icons"
-import { useTheme } from "@/contexts/ThemeContext"
-import CustomHeader from "@/components/CustomHeader"
-import { useNavigation } from "expo-router" 
+import { Stack } from "expo-router";
+import { useNavigation } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/contexts/ThemeContext";
+import CustomHeader from "@/components/CustomHeader";
 
-export default function TabLayout() {
-  const { colors } = useTheme()
-  const navigation = useNavigation() 
+export default function StackLayout() {
+  const { colors } = useTheme();
+  const navigation = useNavigation();
 
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
+        headerStyle: {
           backgroundColor: colors.background,
-          borderTopColor: colors.border,
         },
+        headerTintColor: colors.accent,
       }}
     >
-      <Tabs.Screen
+      <Stack.Screen
         name="index"
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="calendar" size={24} color={color} />,
           header: () => <CustomHeader navigation={navigation} />,
-           headerShown: true, 
+          headerShown: true,
         }}
       />
-      <Tabs.Screen
+      <Stack.Screen
         name="explore"
         options={{
-          title: "Analytics", 
-          tabBarIcon: ({ color }) => <Ionicons name="analytics" size={24} color={color} />,
-          headerShown: false, 
+          title: "Analytics",
+          headerShown: false,
         }}
       />
-    </Tabs>
-  )
+    </Stack>
+  );
 }
