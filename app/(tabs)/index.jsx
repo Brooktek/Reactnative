@@ -289,7 +289,7 @@ const TimeSlotScreen = () => {
           <View style={styles.timeSlotsContainer}>
             <Text style={styles.dateHeader}>{selectedDate.toDateString()}</Text>
 
-            {tasks.length > 0 && (
+            {/* {tasks.length > 0 && (
               <View style={styles.tasksForDay}>
                 <Text style={styles.tasksForDayTitle}>Tasks for today:</Text>
                 <FlatList
@@ -300,7 +300,7 @@ const TimeSlotScreen = () => {
                   style={styles.tasksList}
                 />
               </View>
-            )}
+            )} */}
 
             <Text style={styles.timeSlotsTitle}>Select Time Slots:</Text>
             <FlatList
