@@ -1,7 +1,9 @@
+// firebaseUtils.js
 import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import { getAuth, GoogleAuthProvider, AppleAuthProvider } from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore'; 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { appleAuth } from '@invertase/react-native-apple-authentication'; 
+import { appleAuth } from '@invertase/react-native-apple-authentication';
 
 const firebaseConfig = {
     apiKey: "AIzaSyD-29bFX3O_-c6g2SqrF8ZJf-Z4kmc1LSw",
@@ -21,37 +23,64 @@ if (!getApps().length) {
 }
 
 export const auth = getAuth(app);
-
+export const db = firestore(); 
 
 GoogleSignin.configure({
-  webClientId: 'YOUR_WEB_CLIENT_ID_FROM_FIREBASE', 
+  webClientId: 'AIzaSyD-29bFX3O_-c6g2SqrF8ZJf-Z4kmc1LSw', 
 });
+
+
+const saveUserProfile = async (user) => {
+    if (!user) return;
+
+    const userRef = db.collection('users').doc(user.uid);
+    const userDoc = await userRef.get();
+
+    const profileData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        lastLogin: firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (userDoc.exists) {
+        await userRef.set(profileData, { merge: true });
+        console.log("User profile updated in Firestore:", user.uid);
+    } else {
+        await userRef.set({
+            ...profileData,
+            createdAt: firestore.FieldValue.serverTimestamp(), 
+        });
+        console.log("New user profile created in Firestore:", user.uid);
+    }
+};
 
 
 
 export const signInWithGoogle = async () => {
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-
     const { idToken, accessToken } = await GoogleSignin.signIn();
-
     const googleCredential = GoogleAuthProvider.credential(idToken, accessToken);
 
-    return auth.signInWithCredential(googleCredential);
+    const userCredential = await auth.signInWithCredential(googleCredential);
+
+    await saveUserProfile(userCredential.user);
+
+    return userCredential;
 
   } catch (error) {
     console.error("Google Sign-In Error:", error);
-    throw error; 
+    throw error;
   }
 };
 
 
 export const signInWithApple = async () => {
-
-    if (!appleAuth.isSupported) {
+  if (!appleAuth.isSupported) {
     console.warn("Apple Sign-In not supported on this device.");
-
-    throw new Error("Apple Sign-In not supported"); 
+    throw new Error("Apple Sign-In not supported");
   }
 
   try {
@@ -60,20 +89,35 @@ export const signInWithApple = async () => {
       requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
     });
 
-
-    if (!appleCredential.identityToken) {
+     if (!appleCredential.identityToken) {
          throw new Error('Apple Sign-In failed: No identity token received.');
      }
 
     const firebaseCredential = AppleAuthProvider.credential(
       appleCredential.identityToken,
-      appleCredential.authorizationCode, 
+      appleCredential.authorizationCode,
     );
 
-    return auth.signInWithCredential(firebaseCredential);
+    const userCredential = await auth.signInWithCredential(firebaseCredential);
+
+
+    await saveUserProfile(userCredential.user);
+
+
+    return userCredential;
 
   } catch (error) {
     console.error("Apple Sign-In Error:", error);
+    throw error;
+  }
+};
+
+export const signOut = async () => {
+  try {
+    await auth.signOut();
+    console.log("User signed out");
+  } catch (error) {
+    console.error("Sign out error:", error);
     throw error;
   }
 };

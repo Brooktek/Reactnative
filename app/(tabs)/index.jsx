@@ -21,6 +21,7 @@ import { router } from "expo-router"
 import Calendar from "@/components/Calendar"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useTheme } from "@/contexts/ThemeContext"
+import LoginModal from './components/LoginModal';
 
 
 const { width } = Dimensions.get("window")
