@@ -1,4 +1,4 @@
-"use client"; // Added use client directive
+"use client"; 
 
 import { useState, useEffect } from "react";
 import {
@@ -342,8 +342,8 @@ const AnalyticsScreen = () => {
       height: 40,
       justifyContent: "center",
       overflow: "hidden",
-       // Add a subtle border to match index.js inputs/buttons
-       borderWidth: 1,
+
+      borderWidth: 1,
        borderColor: colors.border,
     },
     picker: {
@@ -425,19 +425,19 @@ const AnalyticsScreen = () => {
       elevation: 2,
     },
     tasksCard: {
-      borderLeftColor: getCategoryColor("Work"), 
+      borderLeftColor: "black", 
     },
     hoursCard: {
-      borderLeftColor: getCategoryColor("Personal"), 
+      borderLeftColor: "black", 
     },
     daysCard: {
-      borderLeftColor: getCategoryColor("Meeting"), 
+      borderLeftColor: "black", 
     },
     summaryIconContainer: {
       width: 42,
       height: 42,
       borderRadius: 21,
-      backgroundColor: colors.surface, // Use theme surface color
+      backgroundColor: colors.surface, 
       justifyContent: "center",
       alignItems: "center",
       marginBottom: 8,
@@ -448,12 +448,12 @@ const AnalyticsScreen = () => {
     summaryValue: {
       fontSize: 20,
       fontWeight: "bold",
-      color: colors.text, // Use theme text color
+      color: colors.text, 
       marginBottom: 4,
     },
     summaryLabel: {
       fontSize: 12,
-      color: colors.textSecondary, // Use theme secondary text color
+      color: colors.textSecondary, 
     },
     sectionTitle: {
       fontSize: 18,
@@ -841,14 +841,12 @@ const AnalyticsScreen = () => {
                         </Text>
                         <View style={styles.taskDetailsRow}>
                           <View style={styles.taskDetailItem}>
-                            {/* Use theme accent color for icons */}
                             <Ionicons name="calendar-outline" size={14} style={styles.taskDetailIcon} />
                             <Text style={styles.taskDetailText}>
                               {new Date(task.date).toLocaleDateString()}
                             </Text>
                           </View>
                           <View style={styles.taskDetailItem}>
-                             {/* Use theme accent color for icons */}
                             <Ionicons name="time-outline" size={14} style={styles.taskDetailIcon} />
                             <Text style={styles.taskDetailText}>
                               {task.timeSlots.join(", ")}
