@@ -238,7 +238,7 @@ const Header = ({
 
         <TouchableOpacity style={styles.avatarButton}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>👤</Text> {/* Emoji or replace with Image/Icon */}
+            <Text style={styles.avatarText}>👤</Text> 
           </View>
         </TouchableOpacity>
       </View>
