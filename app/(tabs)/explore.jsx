@@ -1,3 +1,4 @@
+"use client"; // Added use client directive
 
 import { useState, useEffect } from "react";
 import {
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  StatusBar, 
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { BarChart, PieChart } from "react-native-chart-kit";
@@ -15,16 +17,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/contexts/ThemeContext"; 
 
 const AnalyticsScreen = () => {
   const navigation = useNavigation();
+  const { colors, isDarkMode, toggleTheme } = useTheme(); 
   const [isLoading, setIsLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [selectedDay, setSelectedDay] = useState(new Date().getDate().toString());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [showAnalytics, setShowAnalytics] = useState(true);
+  const [showAnalytics, setShowAnalytics] = useState(true); 
   const [dateRangeFilter, setDateRangeFilter] = useState("day");
   const screenWidth = Dimensions.get("window").width;
   const [showAllTasks, setShowAllTasks] = useState(false);
@@ -38,6 +42,10 @@ const AnalyticsScreen = () => {
     loadTasks();
   }, [selectedDay, selectedMonth, selectedYear, selectedCategory, dateRangeFilter]);
 
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
   const loadTasks = async () => {
     setIsLoading(true);
     try {
@@ -47,13 +55,21 @@ const AnalyticsScreen = () => {
         const allTasks = JSON.parse(storedTasksJson);
         let filteredTasks = allTasks;
 
-        // Apply date range filter
         filteredTasks = filterTasksByDateRange(allTasks);
 
-        // Apply category filter
         if (selectedCategory !== "All") {
           filteredTasks = filteredTasks.filter((task) => task.category === selectedCategory);
         }
+
+        filteredTasks.sort((a, b) => {
+          const dateComparison = new Date(a.date) - new Date(b.date);
+          if (dateComparison !== 0) return dateComparison;
+
+         
+          const timeA = a.timeSlotIds && a.timeSlotIds.length > 0 ? parseInt(a.timeSlotIds[0].split('-')[1] + a.timeSlotIds[0].split('-')[2]) : 0;
+          const timeB = b.timeSlotIds && b.timeSlotIds.length > 0 ? parseInt(b.timeSlotIds[0].split('-')[1] + b.timeSlotIds[0].split('-')[2]) : 0;
+          return timeA - timeB;
+        });
 
         setTasks(filteredTasks);
       } else {
@@ -68,42 +84,66 @@ const AnalyticsScreen = () => {
   };
 
   const filterTasksByDateRange = (allTasks) => {
-    const today = new Date(selectedYear, selectedMonth, Number.parseInt(selectedDay));
 
-    // Set start and end dates based on filter
+    const today = new Date(Number.parseInt(selectedYear), selectedMonth, Number.parseInt(selectedDay));
+
+
     let startDate, endDate;
 
     if (dateRangeFilter === "day") {
       // Single day
       startDate = new Date(today);
+      startDate.setHours(0, 0, 0, 0); 
       endDate = new Date(today);
+      endDate.setHours(23, 59, 59, 999); 
     } else if (dateRangeFilter === "week") {
-      // Current week
-      const dayOfWeek = today.getDay();
+      const dayOfWeek = today.getDay(); 
       startDate = new Date(today);
-      startDate.setDate(today.getDate() - dayOfWeek); // Start of week (Sunday)
+      startDate.setDate(today.getDate() - dayOfWeek);
+      startDate.setHours(0, 0, 0, 0);
       endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 6); // End of week (Saturday)
+      endDate.setDate(startDate.getDate() + 6); 
+      endDate.setHours(23, 59, 59, 999);
     } else if (dateRangeFilter === "month") {
       // Current month
       startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-      endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of month
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); 
+      endDate.setHours(23, 59, 59, 999);
     } else if (dateRangeFilter === "year") {
       // Current year
       startDate = new Date(today.getFullYear(), 0, 1);
+      startDate.setHours(0, 0, 0, 0);
       endDate = new Date(today.getFullYear(), 11, 31);
+      endDate.setHours(23, 59, 59, 999);
     }
 
-    // Convert to date strings for comparison
-    const startDateStr = startDate.toDateString();
-    const endDateStr = endDate.toDateString();
-
-    // Filter tasks that fall within range
     return allTasks.filter((task) => {
       const taskDate = new Date(task.date);
-      return taskDate >= new Date(startDateStr) && taskDate <= new Date(endDateStr);
+
+      return taskDate.getTime() >= startDate.getTime() && taskDate.getTime() <= endDate.getTime();
     });
   };
+
+
+  const getCategoryColor = (category) => {
+    switch (category) {
+      case "Work":
+        return colors.error // Using color from ThemeContext
+      case "Personal":
+        return colors.success 
+      case "Meeting":
+        return colors.info 
+      case "School":
+        return colors.warning 
+      case "Team Time":
+        return colors.teamTime || "#03A9F4"
+      case "Friends":
+        return colors.friends || "#9C27B0"
+      default:
+        return colors.accent 
+    }
+  }
 
   const prepareBarChartData = () => {
     const tagTotals = {}
@@ -122,13 +162,19 @@ const AnalyticsScreen = () => {
       datasets: [
         {
           data: data,
-          color: (opacity = 1) => `rgba(108, 99, 255, ${opacity})`, // Purple
+          color: (opacity = 1) => {
+              const hex = colors.accent.replace('#', '');
+              const r = parseInt(hex.substring(0, 2), 16);
+              const g = parseInt(hex.substring(2, 4), 16);
+              const b = parseInt(hex.substring(4, 6), 16);
+              return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+          },
           strokeWidth: 2,
         },
       ],
     }
   }
-  // Prepare chart data - Removed dummy data logic
+
   const preparePieChartData = () => {
     const tagCounts = {}
     tasks.forEach((task) => {
@@ -138,42 +184,47 @@ const AnalyticsScreen = () => {
       tagCounts[task.category]++
     })
 
-    return Object.keys(tagCounts).map((tag) => {
-      let color = "#999999" // Default color
-      if (tag === "Work") color = "#FF6B6B" // Slightly brighter Red
-      if (tag === "Personal") color = "#6BCB77" // Slightly brighter Green
-      if (tag === "Meeting") color = "#4D96FF" // Slightly brighter Blue
 
+    const allCategories = ["Work", "Personal", "Meeting", "School", "Team Time", "Friends"];
+     const pieData = allCategories
+       .filter(category => tagCounts[category] > 0) 
+       .map((tag) => {
+       return {
+         name: tag,
+         population: tagCounts[tag],
+         color: getCategoryColor(tag), 
+         legendFontColor: colors.text, 
+         legendFontSize: 12,
+       }
+     });
 
-      return {
-        name: tag,
-        population: tagCounts[tag],
-        color: color,
-        legendFontColor: "#fff",
-        legendFontSize: 12,
-      }
-    })
+     if (pieData.length === 0) {
+       return [{
+         name: "No Tasks",
+         population: 1,
+         color: colors.inactive, 
+         legendFontColor: colors.textSecondary,
+         legendFontSize: 12,
+       }];
+     }
+
+    return pieData;
   }
 
-  
-  // Task completion calendar
+
   const renderCalendarGrid = () => {
-    // Get the number of days in the current month
     const daysInMonth = new Date(Number.parseInt(selectedYear), Number.parseInt(selectedMonth) + 1, 0).getDate();
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    // Get completed days from tasks
     const completedDays = new Set();
+    const tasksForSelectedMonth = tasks.filter(task => {
+        const taskDate = new Date(task.date);
+        return taskDate.getMonth() === selectedMonth && taskDate.getFullYear() === Number.parseInt(selectedYear);
+    });
 
-    // Add each day that has a task
-    tasks.forEach((task) => {
+    tasksForSelectedMonth.forEach((task) => {
       const taskDate = new Date(task.date);
-      if (
-        taskDate.getMonth() === Number.parseInt(selectedMonth) &&
-        taskDate.getFullYear() === Number.parseInt(selectedYear)
-      ) {
-        completedDays.add(taskDate.getDate());
-      }
+      completedDays.add(taskDate.getDate());
     });
 
     return (
@@ -184,12 +235,13 @@ const AnalyticsScreen = () => {
             style={[
               styles.calendarDay,
               completedDays.has(day) ? styles.completedDay : styles.emptyDay,
-              day.toString() === selectedDay ? styles.selectedDay : null
+              dateRangeFilter === 'day' && day.toString() === selectedDay ? styles.selectedDayHighlight : null,
+              dateRangeFilter === 'day' && day.toString() === selectedDay ? { borderColor: colors.selected, borderWidth: 2 } : null,
             ]}
           >
             <Text style={[
               styles.calendarDayText,
-              completedDays.has(day) ? styles.completedDayText : styles.emptyDayText
+              completedDays.has(day) ? { color: colors.onAccent || "#fff" } : { color: colors.textSecondary } 
             ]}>
               {day}
             </Text>
@@ -204,34 +256,407 @@ const AnalyticsScreen = () => {
   };
 
   const goBack = () => {
-    navigation.goBack();
-  };
-
-  // Category color helper
-  const getCategoryColor = (category) => {
-    switch(category) {
-      case "Work": return "#FF6384";
-      case "Personal": return "#4BC0C0";
-      case "Meeting": return "#36A2EB";
-      default: return "#FFCE56";
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('index'); 
     }
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background, 
+    },
+    header: {
+      padding: 16,
+      backgroundColor: colors.surfaceVariant, 
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      boxShadow: `0 4px 8px ${colors.shadow}`,
+      elevation: 5, 
+      zIndex: 10,
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    backButton: {
+      padding: 8,
+    },
+    headerTitle: {
+      color: colors.text, 
+      fontSize: 20,
+      fontWeight: "bold",
+    },
+    toggleButton: {
+      padding: 8,
+    },
+    filterSection: {
+      padding: 16,
+      backgroundColor: colors.background, 
+    },
+    dateRangeFilter: {
+      flexDirection: "row",
+      marginBottom: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      padding: 4,
+    },
+    dateFilterButton: {
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 16,
+      flex: 1,
+      alignItems: "center",
+    },
+    activeFilterButton: {
+      backgroundColor: colors.accent, // Use theme accent color
+    },
+    dateFilterText: {
+      color: colors.textSecondary, // Use theme secondary text color
+      fontWeight: "600",
+      fontSize: 13,
+    },
+    activeDateFilterText: {
+      color: colors.onAccent || "#fff", // Text color for accent background
+    },
+    pickerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 16,
+    },
+    pickerContainer: {
+      width: "30%",
+    },
+    pickerLabel: {
+      color: colors.textSecondary, // Use theme secondary text color
+      fontSize: 12,
+      marginBottom: 8,
+      fontWeight: "500",
+    },
+    pickerWrapper: {
+      backgroundColor: colors.surface, // Use theme surface color
+      borderRadius: 10,
+      height: 40,
+      justifyContent: "center",
+      overflow: "hidden",
+       // Add a subtle border to match index.js inputs/buttons
+       borderWidth: 1,
+       borderColor: colors.border,
+    },
+    picker: {
+      color: colors.text, // Use theme text color
+      height: 40,
+    },
+    categoryFilterContainer: {
+      marginBottom: 8,
+    },
+    categoryButtons: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+    },
+    categoryButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      backgroundColor: colors.surface, // Use theme surface color
+      borderRadius: 20,
+      marginRight: 8,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: colors.surface, // Default border color matching background
+    },
+    activeCategoryButton: {
+      borderColor: colors.selected,
+      backgroundColor: colors.surfaceVariant, 
+    },
+    categoryButtonText: {
+      color: colors.textSecondary, // Use theme secondary text color
+      fontWeight: "600",
+      fontSize: 13,
+    },
+    activeCategoryText: {
+      color: colors.text, 
+    },
+    categoryDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginRight: 6,
+    },
+    content: {
+      flex: 1,
+    },
+    contentContainer: {
+      padding: 16,
+      paddingTop: 0, 
+    },
+    loadingContainer: {
+      padding: 40,
+      alignItems: "center",
+    },
+    loadingText: {
+      color: colors.textSecondary, 
+      marginTop: 12,
+      fontSize: 14,
+      opacity: 0.7, 
+    },
+    summaryContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 20,
+       marginTop: 10, // Add some space after filter section
+    },
+    summaryCard: {
+      backgroundColor: colors.surfaceVariant, // Use theme surface variant color
+      borderRadius: 16,
+      padding: 16,
+      width: "31%",
+      alignItems: "center",
+      borderLeftWidth: 3,
+
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: colors.shadowOpacity,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    tasksCard: {
+      borderLeftColor: getCategoryColor("Work"), 
+    },
+    hoursCard: {
+      borderLeftColor: getCategoryColor("Personal"), 
+    },
+    daysCard: {
+      borderLeftColor: getCategoryColor("Meeting"), 
+    },
+    summaryIconContainer: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: colors.surface, // Use theme surface color
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    summaryIcon: {
+       color: colors.accent, // Use theme accent color for icons
+    },
+    summaryValue: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: colors.text, // Use theme text color
+      marginBottom: 4,
+    },
+    summaryLabel: {
+      fontSize: 12,
+      color: colors.textSecondary, // Use theme secondary text color
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: colors.text, // Use theme text color
+      marginTop: 8,
+      marginBottom: 16,
+    },
+    taskListCard: {
+      backgroundColor: colors.surfaceVariant, 
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 20,
+
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: colors.shadowOpacity,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    cardHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    cardTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: colors.text, // Use theme text color
+    },
+    viewAllButton: {
+      color: colors.accent, // Use theme accent color
+      fontSize: 13,
+      fontWeight: "600",
+    },
+    taskList: {
+      gap: 12,
+    },
+    taskItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.surface, // Use theme surface color
+      borderRadius: 12,
+      padding: 12,
+    },
+    categoryIndicator: {
+      width: 4,
+      height: "70%",
+      borderRadius: 2,
+      marginRight: 12,
+    },
+    taskContent: {
+      flex: 1,
+    },
+    taskText: {
+      color: colors.text, // Use theme text color
+      fontSize: 15,
+      fontWeight: "500",
+      marginBottom: 6,
+    },
+    taskDetailsRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+    },
+    taskDetailItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginRight: 12,
+    },
+    taskDetailIcon: {
+      color: colors.accent, // Use theme accent color for icons
+      marginRight: 4,
+    },
+    taskDetailText: {
+      color: colors.textSecondary, // Use theme secondary text color
+      fontSize: 12,
+    },
+    categoryBadge: {
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      marginLeft: 8,
+    },
+    categoryText: {
+      color: "#fff",
+      fontSize: 11,
+      fontWeight: "bold",
+    },
+    chartCard: {
+      backgroundColor: colors.surfaceVariant, // Use theme surface variant color
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 20,
+
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: colors.shadowOpacity,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    chartTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: colors.text, // Use theme text color
+    },
+    chart: {
+      marginVertical: 8,
+      borderRadius: 16,
+    },
+    calendarMonth: {
+      color: colors.accent, // Use theme accent color
+      fontSize: 13,
+      fontWeight: "600",
+    },
+    calendarGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "flex-start",
+      marginVertical: 12,
+    },
+    calendarDay: {
+      width: 36,
+      height: 36,
+      margin: 3,
+      borderRadius: 8,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    emptyDay: {
+      backgroundColor: colors.surface, // Use theme surface color for empty days
+    },
+    completedDay: {
+      backgroundColor: colors.accent, // Use theme accent color for completed days
+    },
+    selectedDayHighlight: {
+
+    },
+    calendarDayText: {
+      fontSize: 12,
+      fontWeight: "bold",
+    },
+    emptyDayText: {
+      color: colors.textSecondary, // Use theme secondary text color
+    },
+    completedDayText: {
+      color: colors.onAccent || "#fff",
+    },
+    calendarLegend: {
+      flexDirection: "row",
+      justifyContent: "center",
+      marginTop: 12,
+    },
+    legendItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginHorizontal: 8,
+    },
+    legendDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginRight: 6,
+    },
+    legendDotActive: {
+      backgroundColor: colors.accent, // Use theme accent color
+    },
+    legendDotEmpty: {
+      backgroundColor: colors.surface, // Use theme surface color
+    },
+    legendText: {
+      color: colors.textSecondary, // Use theme secondary text color
+      fontSize: 12,
+    },
+    bottomSpace: {
+      height: 60,
+    },
+  });
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+       {/* Use StatusBar to match theme */}
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={goBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="white" />
+            <Ionicons name="arrow-back" size={24} color={colors.text} /> {/* Use theme text color */}
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Analytics</Text>
-          <TouchableOpacity onPress={toggleAnalytics} style={styles.toggleButton}>
-            <Ionicons name={showAnalytics ? "eye-off" : "eye"} size={22} color="white" />
-          </TouchableOpacity>
+           {/* Optional: Add theme toggle button here if desired */}
+
+           {/* <TouchableOpacity onPress={toggleTheme} style={styles.toggleButton}>
+             <Ionicons name={isDarkMode ? "moon" : "sunny"} size={22} color={colors.text} />
+           </TouchableOpacity> */}
+
+           <TouchableOpacity onPress={toggleAnalytics} style={styles.toggleButton}>
+             <Ionicons name={showAnalytics ? "eye-off" : "eye"} size={22} color={colors.text} />
+           </TouchableOpacity>
         </View>
       </View>
-      
+
       {/* Filter Section */}
       <View style={styles.filterSection}>
         <View style={styles.dateRangeFilter}>
@@ -253,8 +678,9 @@ const AnalyticsScreen = () => {
             </TouchableOpacity>
           ))}
         </View>
-        
+
         <View style={styles.pickerRow}>
+          {/* Day Picker */}
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Day</Text>
             <View style={styles.pickerWrapper}>
@@ -262,15 +688,16 @@ const AnalyticsScreen = () => {
                 selectedValue={selectedDay}
                 style={styles.picker}
                 onValueChange={(itemValue) => setSelectedDay(itemValue)}
-                dropdownIconColor="white"
+                dropdownIconColor={colors.textSecondary} // Use theme color for dropdown icon
               >
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                  <Picker.Item key={day} label={day.toString()} value={day.toString()} color="#000" />
+                  <Picker.Item key={day} label={day.toString()} value={day.toString()} color={isDarkMode ? "#fff" : "#000"} />
                 ))}
               </Picker>
             </View>
           </View>
 
+          {/* Month Picker */}
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Month</Text>
             <View style={styles.pickerWrapper}>
@@ -278,15 +705,16 @@ const AnalyticsScreen = () => {
                 selectedValue={selectedMonth}
                 style={styles.picker}
                 onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-                dropdownIconColor="white"
+                dropdownIconColor={colors.textSecondary} // Use theme color for dropdown icon
               >
                 {monthNames.map((month, index) => (
-                  <Picker.Item key={month} label={month} value={index} color="#000" />
+                  <Picker.Item key={month} label={month} value={index} color={isDarkMode ? "#fff" : "#000"} />
                 ))}
               </Picker>
             </View>
           </View>
 
+          {/* Year Picker */}
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Year</Text>
             <View style={styles.pickerWrapper}>
@@ -294,26 +722,26 @@ const AnalyticsScreen = () => {
                 selectedValue={selectedYear}
                 style={styles.picker}
                 onValueChange={(itemValue) => setSelectedYear(itemValue)}
-                dropdownIconColor="white"
+                dropdownIconColor={colors.textSecondary} // Use theme color for dropdown icon
               >
                 {[2023, 2024, 2025, 2026].map((year) => (
-                  <Picker.Item key={year} label={year.toString()} value={year.toString()} color="#000" />
+                  <Picker.Item key={year} label={year.toString()} value={year.toString()} color={isDarkMode ? "#fff" : "#000"} />
                 ))}
               </Picker>
             </View>
           </View>
         </View>
-        
+
         <View style={styles.categoryFilterContainer}>
           <Text style={styles.pickerLabel}>Category</Text>
           <View style={styles.categoryButtons}>
-            {["All", "Work", "Personal", "Meeting"].map((category) => (
+             {/* Include all categories from index.js for consistency */}
+            {["All", "Work", "Personal", "Meeting", "School", "Team Time", "Friends"].map((category) => (
               <TouchableOpacity
                 key={category}
                 style={[
                   styles.categoryButton,
                   selectedCategory === category && styles.activeCategoryButton,
-                  selectedCategory === category && { borderColor: category !== "All" ? getCategoryColor(category) : "#9b87f5" }
                 ]}
                 onPress={() => setSelectedCategory(category)}
               >
@@ -321,7 +749,7 @@ const AnalyticsScreen = () => {
                   <View
                     style={[
                       styles.categoryDot,
-                      { backgroundColor: getCategoryColor(category) }
+                      { backgroundColor: getCategoryColor(category) } // Use theme category color
                     ]}
                   />
                 )}
@@ -338,14 +766,14 @@ const AnalyticsScreen = () => {
       </View>
 
       {/* Content */}
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#9b87f5" />
+            <ActivityIndicator size="large" color={colors.accent} /> {/* Use theme accent color */}
             <Text style={styles.loadingText}>Loading analytics...</Text>
           </View>
         ) : (
@@ -354,25 +782,28 @@ const AnalyticsScreen = () => {
             <View style={styles.summaryContainer}>
               <View style={[styles.summaryCard, styles.tasksCard]}>
                 <View style={styles.summaryIconContainer}>
-                  <Ionicons name="list" size={22} color="#9b87f5" />
+                  {/* Use theme accent color for icons */}
+                  <Ionicons name="list" size={22} style={styles.summaryIcon} />
                 </View>
                 <Text style={styles.summaryValue}>{tasks.length}</Text>
                 <Text style={styles.summaryLabel}>Tasks</Text>
               </View>
-              
+
               <View style={[styles.summaryCard, styles.hoursCard]}>
                 <View style={styles.summaryIconContainer}>
-                  <Ionicons name="time" size={22} color="#9b87f5" />
+                   {/* Use theme accent color for icons */}
+                  <Ionicons name="time" size={22} style={styles.summaryIcon} />
                 </View>
                 <Text style={styles.summaryValue}>
                   {tasks.reduce((total, task) => total + task.totalTime, 0).toFixed(1)}h
                 </Text>
                 <Text style={styles.summaryLabel}>Hours Planned</Text>
               </View>
-              
+
               <View style={[styles.summaryCard, styles.daysCard]}>
                 <View style={styles.summaryIconContainer}>
-                  <Ionicons name="calendar" size={22} color="#9b87f5" />
+                   {/* Use theme accent color for icons */}
+                  <Ionicons name="calendar" size={22} style={styles.summaryIcon} />
                 </View>
                 <Text style={styles.summaryValue}>
                   {Array.from(new Set(tasks.map((task) => task.date))).length}
@@ -394,15 +825,15 @@ const AnalyticsScreen = () => {
                     </TouchableOpacity>
                   )}
                 </View>
-                
+
                 <View style={styles.taskList}>
                   {(showAllTasks ? tasks : tasks.slice(0, 4)).map((task) => (
                     <View key={task.id} style={styles.taskItem}>
-                      <View 
+                      <View
                         style={[
-                          styles.categoryIndicator, 
-                          { backgroundColor: getCategoryColor(task.category) }
-                        ]} 
+                          styles.categoryIndicator,
+                          { backgroundColor: getCategoryColor(task.category) } // Use theme category color
+                        ]}
                       />
                       <View style={styles.taskContent}>
                         <Text style={styles.taskText} numberOfLines={1}>
@@ -410,13 +841,15 @@ const AnalyticsScreen = () => {
                         </Text>
                         <View style={styles.taskDetailsRow}>
                           <View style={styles.taskDetailItem}>
-                            <Ionicons name="calendar-outline" size={14} color="#9b87f5" style={styles.taskDetailIcon} />
+                            {/* Use theme accent color for icons */}
+                            <Ionicons name="calendar-outline" size={14} style={styles.taskDetailIcon} />
                             <Text style={styles.taskDetailText}>
                               {new Date(task.date).toLocaleDateString()}
                             </Text>
                           </View>
                           <View style={styles.taskDetailItem}>
-                            <Ionicons name="time-outline" size={14} color="#9b87f5" style={styles.taskDetailIcon} />
+                             {/* Use theme accent color for icons */}
+                            <Ionicons name="time-outline" size={14} style={styles.taskDetailIcon} />
                             <Text style={styles.taskDetailText}>
                               {task.timeSlots.join(", ")}
                             </Text>
@@ -426,7 +859,7 @@ const AnalyticsScreen = () => {
                       <View
                         style={[
                           styles.categoryBadge,
-                          { backgroundColor: getCategoryColor(task.category) }
+                          { backgroundColor: getCategoryColor(task.category) } // Use theme category color
                         ]}
                       >
                         <Text style={styles.categoryText}>{task.category}</Text>
@@ -449,16 +882,30 @@ const AnalyticsScreen = () => {
                   </View>
                   <BarChart
                     data={prepareBarChartData()}
-                    width={screenWidth - 40}
+                    width={screenWidth - 32} 
                     height={220}
                     yAxisSuffix="h"
                     chartConfig={{
-                      backgroundColor: "#1e1e1e",
-                      backgroundGradientFrom: "#252536",
-                      backgroundGradientTo: "#3F3F63",
+                      backgroundColor: colors.surfaceVariant, 
+                      backgroundGradientFrom: colors.surfaceVariant, 
+                      backgroundGradientTo: colors.surface, // Use theme color
                       decimalPlaces: 1,
-                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+
+                      color: (opacity = 1) => {
+                         const hex = colors.text.replace('#', '');
+                         const r = parseInt(hex.substring(0, 2), 16);
+                         const g = parseInt(hex.substring(2, 4), 16);
+                         const b = parseInt(hex.substring(4, 6), 16);
+                         return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                      },
+
+                      labelColor: (opacity = 1) => {
+                         const hex = colors.textSecondary.replace('#', '');
+                         const r = parseInt(hex.substring(0, 2), 16);
+                         const g = parseInt(hex.substring(2, 4), 16);
+                         const b = parseInt(hex.substring(4, 6), 16);
+                         return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                      },
                       style: {
                         borderRadius: 16,
                       },
@@ -466,8 +913,11 @@ const AnalyticsScreen = () => {
                       propsForBackgroundLines: {
                         strokeWidth: 1,
                         strokeDasharray: "5, 5",
-                        stroke: "rgba(255, 255, 255, 0.2)",
+                        stroke: colors.border, // Use theme border color
                       },
+                       propsForLabels: {
+                         fontSize: 10, // Adjust font size for labels if needed
+                       },
                     }}
                     verticalLabelRotation={0}
                     fromZero
@@ -482,16 +932,22 @@ const AnalyticsScreen = () => {
                   </View>
                   <PieChart
                     data={preparePieChartData()}
-                    width={screenWidth - 40}
+                    width={screenWidth - 32} // Adjust width for padding
                     height={220}
                     chartConfig={{
-                      backgroundColor: "#1e1e1e",
-                      backgroundGradientFrom: "#252536",
-                      backgroundGradientTo: "#3F3F63",
-                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                      backgroundColor: colors.surfaceVariant, // Use theme color
+                      backgroundGradientFrom: colors.surfaceVariant, // Use theme color
+                      backgroundGradientTo: colors.surface, 
+                      color: (opacity = 1) => {
+                         const hex = colors.text.replace('#', '');
+                         const r = parseInt(hex.substring(0, 2), 16);
+                         const g = parseInt(hex.substring(2, 4), 16);
+                         const b = parseInt(hex.substring(4, 6), 16);
+                         return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                      },
                     }}
                     accessor="population"
-                    backgroundColor="transparent"
+                    backgroundColor="transparent" // Keep transparent if the card background is sufficient
                     paddingLeft="15"
                     absolute
                     style={styles.chart}
@@ -509,11 +965,11 @@ const AnalyticsScreen = () => {
                   {renderCalendarGrid()}
                   <View style={styles.calendarLegend}>
                     <View style={styles.legendItem}>
-                      <View style={[styles.legendDot, { backgroundColor: "#9b87f5" }]} />
+                      <View style={[styles.legendDot, styles.legendDotActive]} /> {/* Use theme legend dot active style */}
                       <Text style={styles.legendText}>Active Day</Text>
                     </View>
                     <View style={styles.legendItem}>
-                      <View style={[styles.legendDot, { backgroundColor: "#2A2A3F" }]} />
+                      <View style={[styles.legendDot, styles.legendDotEmpty]} /> {/* Use theme legend dot empty style */}
                       <Text style={styles.legendText}>No Activity</Text>
                     </View>
                   </View>
@@ -530,362 +986,5 @@ const AnalyticsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#191925",
-  },
-  header: {
-    padding: 16,
-    backgroundColor: "#252536",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-    zIndex: 10,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  toggleButton: {
-    padding: 8,
-  },
-  filterSection: {
-    padding: 16,
-    backgroundColor: "#191925",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  dateRangeFilter: {
-    flexDirection: "row",
-    marginBottom: 16,
-    backgroundColor: "#252536",
-    borderRadius: 20,
-    padding: 4,
-  },
-  dateFilterButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    flex: 1,
-    alignItems: "center",
-  },
-  activeFilterButton: {
-    backgroundColor: "#9b87f5",
-  },
-  dateFilterText: {
-    color: "#929292",
-    fontWeight: "600",
-    fontSize: 13,
-  },
-  activeDateFilterText: {
-    color: "#fff",
-  },
-  pickerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  pickerContainer: {
-    width: "30%",
-  },
-  pickerLabel: {
-    color: "#929292",
-    fontSize: 12,
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  pickerWrapper: {
-    backgroundColor: "#252536",
-    borderRadius: 10,
-    height: 40,
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  picker: {
-    color: "white",
-    height: 40,
-  },
-  categoryFilterContainer: {
-    marginBottom: 8,
-  },
-  categoryButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  categoryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#252536",
-    borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  activeCategoryButton: {
-    backgroundColor: "#252536",
-    borderWidth: 1,
-  },
-  categoryButtonText: {
-    color: "#929292",
-    fontWeight: "600",
-    fontSize: 13,
-  },
-  activeCategoryText: {
-    color: "#fff",
-  },
-  categoryDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: "center",
-  },
-  loadingText: {
-    color: "#fff",
-    marginTop: 12,
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  summaryContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  summaryCard: {
-    backgroundColor: "#252536",
-    borderRadius: 16,
-    padding: 16,
-    width: "31%",
-    alignItems: "center",
-    borderLeftWidth: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tasksCard: {
-    borderLeftColor: "#FF6384", // Pink
-  },
-  hoursCard: {
-    borderLeftColor: "#4BC0C0", // Teal
-  },
-  daysCard: {
-    borderLeftColor: "#36A2EB", // Blue
-  },
-  summaryIconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#2F2F45",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  summaryValue: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    color: "#929292",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  taskListCard: {
-    backgroundColor: "#252536",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  viewAllButton: {
-    color: "#9b87f5",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  taskList: {
-    gap: 12,
-  },
-  taskItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#2F2F45",
-    borderRadius: 12,
-    padding: 12,
-  },
-  categoryIndicator: {
-    width: 4,
-    height: "70%",
-    borderRadius: 2,
-    marginRight: 12,
-  },
-  taskContent: {
-    flex: 1,
-  },
-  taskText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "500",
-    marginBottom: 6,
-  },
-  taskDetailsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  taskDetailItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  taskDetailIcon: {
-    marginRight: 4,
-  },
-  taskDetailText: {
-    color: "#929292",
-    fontSize: 12,
-  },
-  categoryBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  categoryText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "bold",
-  },
-  chartCard: {
-    backgroundColor: "#252536",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
-  calendarMonth: {
-    color: "#9b87f5",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  calendarGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    marginVertical: 12,
-  },
-  calendarDay: {
-    width: 36,
-    height: 36,
-    margin: 3,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyDay: {
-    backgroundColor: "#2A2A3F",
-  },
-  completedDay: {
-    backgroundColor: "#9b87f5",
-  },
-  selectedDay: {
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
-  calendarDayText: {
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  emptyDayText: {
-    color: "#929292",
-  },
-  completedDayText: {
-    color: "#fff",
-  },
-  calendarLegend: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 12,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 8,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  legendText: {
-    color: "#929292",
-    fontSize: 12,
-  },
-  bottomSpace: {
-    height: 60,
-  },
-});
 
 export default AnalyticsScreen;

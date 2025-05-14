@@ -22,17 +22,17 @@ import Calendar from "@/components/Calendar"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useTheme } from "@/contexts/ThemeContext"
 
-// Get screen dimensions
+
 const { width } = Dimensions.get("window")
 
-// Generate time slots from 8 AM to 8 PM
+
 const generateTimeSlots = () => {
   const timeSlots = []
   for (let hour = 8; hour < 20; hour++) {
     const period = hour >= 12 ? "PM" : "AM"
     const displayHour = hour > 12 ? hour - 12 : hour
 
-    // Add two 30-minute slots per hour
+
     timeSlots.push({
       id: `slot-${hour}-00`,
       time: `${displayHour}:00 ${period}`,
@@ -62,6 +62,11 @@ export default function TimeSlotScreen() {
   const [editingTaskId, setEditingTaskId] = useState(null)
   const [sidebarVisible, setSidebarVisible] = useState(false)
   const [sidebarAnimation] = useState(new Animated.Value(-width * 0.7))
+  const [customCategories, setCustomCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState('');
+  const [newColor, setNewColor] = useState('#FF0000'); 
+
+
 
   useEffect(() => {
     loadTasks()
@@ -131,14 +136,14 @@ export default function TimeSlotScreen() {
 
   const toggleTimeSlot = (slot) => {
     setSelectedTimeSlots((prev) => {
-      // Check if already selected
+
       const isSelected = prev.some((selectedSlot) => selectedSlot.id === slot.id)
 
       if (isSelected) {
-        // Remove from selection
+
         return prev.filter((selectedSlot) => selectedSlot.id !== slot.id)
       } else {
-        // Add to selection
+
         return [...prev, slot]
       }
     })
@@ -161,7 +166,7 @@ export default function TimeSlotScreen() {
       return
     }
 
-    // Check if selected time slots have tasks
+
     const hasTask = selectedTimeSlots.some((slot) => timeSlots.find((ts) => ts.id === slot.id)?.hasTask)
 
     if (!hasTask) {
@@ -209,27 +214,24 @@ export default function TimeSlotScreen() {
 
   const deleteSelectedTasks = async () => {
     try {
-      // Get all tasks
+
       const storedTasksJson = await AsyncStorage.getItem("tasks")
       if (!storedTasksJson) return
 
       const storedTasks = JSON.parse(storedTasksJson)
 
-      // Filter out tasks that have time slots in the selected time slots
+
       const selectedSlotIds = selectedTimeSlots.map((slot) => slot.id)
       const updatedTasks = storedTasks.filter((task) => {
-        // Keep task if none of its time slots are in the selected time slots
+
         return !task.timeSlotIds.some((id) => selectedSlotIds.includes(id))
       })
 
-      // Save updated tasks
       await AsyncStorage.setItem("tasks", JSON.stringify(updatedTasks))
 
-      // Update state
       setTasks(tasks.filter((task) => !task.timeSlotIds.some((id) => selectedSlotIds.includes(id))))
       setSelectedTimeSlots([])
 
-      // Update time slot highlights
       updateTimeSlotHighlights(updatedTasks.filter((task) => task.date === selectedDate.toDateString()))
 
       Alert.alert("Success", "Task(s) deleted successfully!")
@@ -246,12 +248,10 @@ export default function TimeSlotScreen() {
     }
 
     try {
-      // Get existing tasks
       const storedTasksJson = await AsyncStorage.getItem("tasks")
       const storedTasks = storedTasksJson ? JSON.parse(storedTasksJson) : []
 
       if (editingTaskId) {
-        // Editing existing task
         const updatedTasks = storedTasks.map((task) => {
           if (task.id === editingTaskId) {
             return {
@@ -266,10 +266,9 @@ export default function TimeSlotScreen() {
           return task
         })
 
-        // Save updated tasks
+
         await AsyncStorage.setItem("tasks", JSON.stringify(updatedTasks))
 
-        // Update state
         setTasks(
           tasks.map((task) =>
             task.id === editingTaskId
@@ -287,7 +286,6 @@ export default function TimeSlotScreen() {
 
         Alert.alert("Success", "Task updated successfully!")
       } else {
-        // Creating new task
         const newTask = {
           id: Date.now().toString(),
           task: taskText,
@@ -296,25 +294,20 @@ export default function TimeSlotScreen() {
           timeSlotIds: selectedTimeSlots.map((slot) => slot.id),
           timeSlots: selectedTimeSlots.map((slot) => slot.displayText),
           timestamp: new Date().toLocaleTimeString(),
-          totalTime: selectedTimeSlots.length * 0.5, // Each slot is 30 minutes
+          totalTime: selectedTimeSlots.length * 0.5, 
         }
 
-        // Add new task
         const updatedTasks = [...storedTasks, newTask]
 
-        // Save back to storage
         await AsyncStorage.setItem("tasks", JSON.stringify(updatedTasks))
 
-        // Update state
         setTasks((prev) => [...prev, newTask])
 
         Alert.alert("Success", "Task added successfully!")
       }
 
-      // Update time slot highlights
       loadTasks()
 
-      // Reset form
       setTaskText("")
       setSelectedTimeSlots([])
       setModalVisible(false)
@@ -326,7 +319,6 @@ export default function TimeSlotScreen() {
   }
 
 
-  // Get category color
   const getCategoryColor = (category) => {
     switch (category) {
       case "Work":
@@ -346,17 +338,14 @@ export default function TimeSlotScreen() {
     }
   }
 
-  // Update the renderTimeSlot function to display category colors
   const renderTimeSlot = ({ item }) => {
     const isSelected = selectedTimeSlots.some((slot) => slot.id === item.id)
 
-    // Determine background color based on category
-    let backgroundColor = colors.surfaceVariant // Default background
+    let backgroundColor = colors.surfaceVariant 
     if (item.hasTask) {
       backgroundColor = getCategoryColor(item.category)
     }
 
-    // Apply opacity for better text readability
     const finalBackgroundColor = item.hasTask ? backgroundColor + "CC" : backgroundColor // CC adds 80% opacity
 
     return (
@@ -466,7 +455,6 @@ export default function TimeSlotScreen() {
         {renderSidebarMenuItem(null, "Friends", "#9C27B0", true)}
       </Animated.View>
 
-      
 
       {/* Main Content */}
       <View style={styles.content}>
@@ -477,7 +465,18 @@ export default function TimeSlotScreen() {
           /* Time Slots View */
           <View style={styles.timeSlotsContainer}>
 
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={[styles.timeSlotsTitle, { color: colors.text }]}>Select Time Slots:</Text>
+            
+            <TouchableOpacity
+              style={[styles.calendarButton, { backgroundColor: colors.surfaceVariant }]}
+              onPress={() => setSelectedView("calendar")}
+            >
+              <Ionicons name="calendar" size={20} color={colors.accent} />
+              <Text style={[styles.calendarButtonText, { color: colors.text }]}></Text>
+            </TouchableOpacity>
+          </View>
+
             <FlatList
               data={timeSlots}
               renderItem={renderTimeSlot}
@@ -650,6 +649,19 @@ const styles = StyleSheet.create({
   headerButtonText: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  calendarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginLeft: 10,
+  },
+  calendarButtonText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
   },
   viewSwitcher: {
     flexDirection: "row",

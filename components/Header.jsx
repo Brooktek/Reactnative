@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
+import {
+  StyleSheet,
+  View,
+  Text,
   TouchableOpacity,
   Dimensions,
-  ScrollView
+  ScrollView 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import DateDropdown from './DateDropdown';
 import { useRouter } from 'expo-router';
+import { useTheme } from "@/contexts/ThemeContext"; 
 
-const Header = ({ 
-  selectedDate, 
-  selectedMonth, 
+
+const Header = ({
+  selectedDate,
+  selectedMonth,
   selectedYear,
   onDateChange,
   onMonthChange,
   onYearChange
 }) => {
+  const { colors, isDarkMode } = useTheme(); 
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
@@ -27,10 +29,12 @@ const Header = ({
 
   const dateOptions = Array.from({ length: 31 }, (_, i) => i + 1);
   const monthOptions = [
-    'January', 'February', 'March', 'April', 'May', 'June', 
+    'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  const yearOptions = Array.from({ length: 10 }, (_, i) => 2020 + i);
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
+
 
   const closeAllDropdowns = () => {
     setShowDateDropdown(false);
@@ -44,33 +48,168 @@ const Header = ({
     router.push('/explore');
   };
 
+  const styles = StyleSheet.create({
+    header: {
+      flexDirection: 'row', 
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 15, 
+      paddingVertical: 10,
+      backgroundColor: colors.background, 
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border, 
+      zIndex: 1,
+      sboxShadow: `0 2px 3px ${colors.shadow}`,
+      elevation: 3,
+    },
+    smallHeader: {
+      flexDirection: 'column', 
+      alignItems: 'flex-start',
+      paddingVertical: 5, 
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      zIndex: 2,
+      flexWrap: 'wrap', 
+      flex: 1, 
+    },
+    smallHeaderLeft: {
+      width: '100%',
+      justifyContent: 'space-between',
+      marginBottom: 5,
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      zIndex: 2, 
+      marginLeft: 10, 
+    },
+    smallHeaderRight: {
+      width: '100%',
+      justifyContent: 'space-between',
+      marginLeft: 0, 
+      marginTop: 5, 
+    },
+    dropdown: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border, 
+      borderRadius: 6, 
+      paddingHorizontal: 10,
+      paddingVertical: 6, 
+      marginRight: 8,
+      marginBottom: 5, 
+      backgroundColor: colors.surface, 
+       minWidth: 80, 
+       justifyContent: 'space-between', 
+    },
+    smallDropdown: {
+      paddingHorizontal: 8, 
+      marginRight: 4, 
+      minWidth: 70, 
+    },
+    dropdownText: {
+      marginRight: 5,
+      fontSize: 14,
+      color: colors.text, 
+    },
+    dropdownIcon: {
+      color: colors.textSecondary, 
+    },
+    button: { 
+      paddingHorizontal: 15,
+      paddingVertical: 8,
+      borderRadius: 6, 
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: 80, 
+    },
+    smallButton: { 
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      minWidth: 70,
+    },
+    searchButton: {
+      backgroundColor: colors.accent, 
+      marginRight: 8, 
+    },
+     searchButtonText: {
+       color: colors.onAccent || '#fff', 
+       fontWeight: 'bold',
+       fontSize: 14,
+     },
+    analyticsButton: {
+      backgroundColor: colors.accent,
+      marginRight: 10, 
+    },
+    analyticsButtonText: {
+      color: colors.onAccent || '#fff', 
+      fontWeight: 'bold',
+      fontSize: 14,
+    },
+    avatarButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    avatar: {
+      width: '100%',
+      height: '100%',
+      backgroundColor: colors.surfaceVariant, 
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    avatarText: {
+      fontSize: 20,
+    },
+     dropdownOverlay: { 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0, 
+     },
+  });
+
+
   return (
-    <View style={[styles.header, isSmallScreen && styles.smallHeader]}>
+    <View style={styles.header}>
+       {/* Overlay to close dropdowns when tapping outside */}
+      {(showDateDropdown || showMonthDropdown || showYearDropdown) && (
+        <TouchableOpacity style={styles.dropdownOverlay} onPress={closeAllDropdowns} activeOpacity={1} />
+      )}
+
       {/* Left Section */}
       <View style={[styles.headerLeft, isSmallScreen && styles.smallHeaderLeft]}>
-        <TouchableOpacity 
-          style={[styles.dropdown, isSmallScreen && styles.smallDropdown]} 
+        <TouchableOpacity
+          style={[styles.dropdown, isSmallScreen && styles.smallDropdown]}
           onPress={() => {
             closeAllDropdowns();
             setShowDateDropdown(!showDateDropdown);
           }}
         >
           <Text style={styles.dropdownText}>{selectedDate}</Text>
-          <Ionicons name="chevron-down" size={16} color="#000" />
+          <Ionicons name="chevron-down" size={16} style={styles.dropdownIcon} />
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[styles.dropdown, isSmallScreen && styles.smallDropdown]}
           onPress={() => {
             closeAllDropdowns();
             setShowMonthDropdown(!showMonthDropdown);
           }}
         >
-          <Text style={styles.dropdownText}>{selectedMonth}</Text>
-          <Ionicons name="chevron-down" size={16} color="#000" />
+          <Text style={styles.dropdownText}>{monthOptions[selectedMonth]}</Text>{/* Display month name */}
+          <Ionicons name="chevron-down" size={16} style={styles.dropdownIcon} />
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[styles.dropdown, isSmallScreen && styles.smallDropdown]}
           onPress={() => {
             closeAllDropdowns();
@@ -78,32 +217,39 @@ const Header = ({
           }}
         >
           <Text style={styles.dropdownText}>{selectedYear}</Text>
-          <Ionicons name="chevron-down" size={16} color="#000" />
+          <Ionicons name="chevron-down" size={16} style={styles.dropdownIcon} />
         </TouchableOpacity>
-        
-        
+
+        {/* Using the base button style */}
+        <TouchableOpacity style={[styles.button, styles.searchButton, isSmallScreen && styles.smallButton]}>
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Right Section */}
       <View style={[styles.headerRight, isSmallScreen && styles.smallHeaderRight]}>
-        <TouchableOpacity 
-          style={[styles.analyticsButton, isSmallScreen && styles.smallButton]}
+         {/* Using the base button style */}
+        <TouchableOpacity
+          style={[styles.button, styles.analyticsButton, isSmallScreen && styles.smallButton]}
           onPress={navigateToAnalytics}
         >
           <Text style={styles.analyticsButtonText}>
-            {isSmallScreen ? 'Analytics' : 'View Analytics'}
+            {/* Text can change based on screen size if desired */}
+            Analytics
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.avatarButton}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>👤</Text>
+            <Text style={styles.avatarText}>👤</Text> {/* Emoji or replace with Image/Icon */}
           </View>
         </TouchableOpacity>
       </View>
 
+      {/* Dropdowns (Ensure DateDropdown component is styled to match theme) */}
+      {/* Note: Positioning of absolute dropdowns relative to the header might need adjustment based on your layout */}
       {/* Date Dropdown */}
-      <DateDropdown
+      {/* <DateDropdown
         visible={showDateDropdown}
         options={dateOptions}
         selectedValue={selectedDate}
@@ -112,141 +258,45 @@ const Header = ({
           setShowDateDropdown(false);
         }}
         onClose={() => setShowDateDropdown(false)}
+        // Example positioning relative to the header/screen
         position={{ top: isSmallScreen ? 120 : 60, left: 10 }}
-      />
-      
+      /> */}
+
       {/* Month Dropdown */}
-      <DateDropdown
+      {/* <DateDropdown
         visible={showMonthDropdown}
         options={monthOptions}
-        selectedValue={selectedMonth}
+        selectedValue={monthOptions[selectedMonth]} // Pass the string value
         onSelect={(value) => {
-          onMonthChange(value);
+          onMonthChange(monthOptions.indexOf(value)); // Pass back the index
           setShowMonthDropdown(false);
         }}
         onClose={() => setShowMonthDropdown(false)}
+         // Example positioning relative to the header/screen
         position={{ top: isSmallScreen ? 120 : 60, left: isSmallScreen ? 50 : 70 }}
-      />
-      
+      /> */}
+
       {/* Year Dropdown */}
-      <DateDropdown
+      {/* <DateDropdown
         visible={showYearDropdown}
         options={yearOptions}
         selectedValue={selectedYear}
         onSelect={(value) => {
           onYearChange(value);
-          setShowYearDropdown(false);
+          setShowYearDrgoopdown(false);
         }}
         onClose={() => setShowYearDropdown(false)}
+         // Example positioning relative to the header/screen
         position={{ top: isSmallScreen ? 120 : 60, left: isSmallScreen ? 100 : 140 }}
-      />
+      /> */}
+
+       {showDateDropdown && <Text style={{color: colors.text}}>Date Dropdown Placeholder</Text>}
+       {showMonthDropdown && <Text style={{color: colors.text}}>Month Dropdown Placeholder</Text>}
+       {showYearDropdown && <Text style={{color: colors.text}}>Year Dropdown Placeholder</Text>}
+
+
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'Auto', 
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    zIndex: 1,
-  },
-  smallHeader: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    paddingVertical: 5,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 2,
-    flexWrap: 'wrap',
-  },
-  smallHeaderLeft: {
-    width: '100%',
-    justifyContent: 'space-between',
-    marginBottom: 5,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  smallHeaderRight: {
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-  dropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginRight: 8,
-    marginBottom: 5,
-    backgroundColor: '#fff',
-    width: 'Auto', // Adjust width based on screen size
-  },
-  smallDropdown: {
-    paddingHorizontal: 5,
-    marginRight: 4,
-    width: 'Auto', // Adjust width for small screens
-  },
-  dropdownText: {
-    marginRight: 5,
-    fontSize: 14,
-  },
-  searchButton: {
-    backgroundColor: '#6c63ff',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 4,
-    width: 'Auto', // Adjust width based on screen size
-  },
-  smallButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    width: 'Auto', // Adjust width for small screens
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  analyticsButton: {
-    backgroundColor: '#000',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 4,
-    marginRight: 10,
-    width: 'Auto', // Adjust width based on screen size
-  },
-  analyticsButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  avatarButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    overflow: 'hidden',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#ccc',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 20,
-  },
-});
 
 export default Header;
