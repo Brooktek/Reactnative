@@ -887,7 +887,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  // Sidebar styles
+
   sidebarOverlay: {
     position: "absolute",
     top: 0,

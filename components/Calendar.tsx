@@ -39,13 +39,10 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   const [tasksForMonth, setTasksForMonth] = useState<Task[]>([])
   const [monthAnimation] = useState(new Animated.Value(0))
 
-  // Month names for header
   const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
-  // Day names for header
   const dayNames = ["M", "T", "W", "T", "F", "S", "S"]
 
-  // Load tasks for highlighting dates with events
   useEffect(() => {
     loadTasksForMonth()
   }, [currentYear, currentMonth])
@@ -57,7 +54,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
       if (storedTasksJson) {
         const allTasks = JSON.parse(storedTasksJson)
 
-        // Filter tasks for current month and year
         const filteredTasks = allTasks.filter((task: Task) => {
           const taskDate = new Date(task.date)
           return taskDate.getFullYear() === currentYear && taskDate.getMonth() === currentMonth
@@ -83,28 +79,23 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   }
 
   const getFirstDayOfMonth = (year: number, month: number): number => {
-    // Get the day of week (0-6, where 0 is Sunday)
     const dayOfWeek = new Date(year, month, 1).getDay()
-    // Convert to 0-6 where 0 is Monday
     return dayOfWeek === 0 ? 6 : dayOfWeek - 1
   }
 
   const handleDateSelect = (date: number, month = currentMonth, year = currentYear) => {
     setSelectedDate(date)
     if (onDateSelect) {
-      // Create a Date object with the selected year, month, and day
       onDateSelect(new Date(year, month, date))
     }
   }
 
   const navigateToPreviousMonth = () => {
-    // Start animation
     Animated.timing(monthAnimation, {
       toValue: -width,
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      // After animation completes, reset and update month
       monthAnimation.setValue(0)
 
       if (currentMonth === 0) {
@@ -117,13 +108,11 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   }
 
   const navigateToNextMonth = () => {
-    // Start animation
     Animated.timing(monthAnimation, {
       toValue: width,
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      // After animation completes, reset and update month
       monthAnimation.setValue(0)
 
       if (currentMonth === 11) {
@@ -135,7 +124,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     })
   }
 
-  // Check if a date has tasks
   const hasTasksOnDate = (day: number): boolean => {
     return tasksForMonth.some((task) => {
       const taskDate = new Date(task.date)
@@ -143,7 +131,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     })
   }
 
-  // Get task category for a specific date
   const getTaskCategoryForDate = (day: number): string | null => {
     const tasksForDay = tasksForMonth.filter((task) => {
       const taskDate = new Date(task.date)
@@ -156,7 +143,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     return null
   }
 
-  // Get color based on category
   const getCategoryColor = (category: string | null): string => {
     if (!category) return colors.accent
 
@@ -184,7 +170,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     const today = new Date()
     const isCurrentMonth = today.getFullYear() === currentYear && today.getMonth() === currentMonth
 
-    // Get days from previous month to fill the first row
     const daysInPrevMonth =
       currentMonth === 0 ? getDaysInMonth(currentYear - 1, 11) : getDaysInMonth(currentYear, currentMonth - 1)
 
@@ -198,7 +183,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
       })
     }
 
-    // Current month days
     const currentMonthDays: DateObject[] = Array.from({ length: daysInMonth }, (_, i) => ({
       day: i + 1,
       currentMonth: true,
@@ -206,7 +190,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
       year: currentYear,
     }))
 
-    // Next month days to fill the last row
     const totalDaysDisplayed = prevMonthDays.length + currentMonthDays.length
     const nextMonthDays: DateObject[] = []
     const remainingCells = Math.ceil(totalDaysDisplayed / 7) * 7 - totalDaysDisplayed
@@ -220,10 +203,8 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
       })
     }
 
-    // Combine all days
     const allDays = [...prevMonthDays, ...currentMonthDays, ...nextMonthDays]
 
-    // Split into weeks
     const weeks: DateObject[][] = []
     for (let i = 0; i < allDays.length; i += 7) {
       weeks.push(allDays.slice(i, i + 7))

@@ -17,7 +17,6 @@ const TimeSlot = ({ item, isSelected, onPress }) => {
   );
 };
 
-// Fixed number of columns
 const numColumns = 4;
 
 const styles = StyleSheet.create({

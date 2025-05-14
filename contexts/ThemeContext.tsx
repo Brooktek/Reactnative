@@ -33,14 +33,13 @@ type ThemeContextType = {
   }
 }
 
-// Create context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const colorScheme = useColorScheme()
   const [isDarkMode, setIsDarkMode] = useState<boolean>(colorScheme === "dark")
 
-  // Load theme preference from storage on initial load
+
   useEffect(() => {
     const loadThemePreference = async () => {
       try {
@@ -48,7 +47,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (storedTheme !== null) {
           setIsDarkMode(storedTheme === "dark")
         } else {
-          // Use system preference as default
+
           setIsDarkMode(colorScheme === "dark")
         }
       } catch (error) {
@@ -59,7 +58,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loadThemePreference()
   }, [colorScheme])
 
-  // Save theme preference whenever it changes
+
   useEffect(() => {
     const saveThemePreference = async () => {
       try {
@@ -72,12 +71,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveThemePreference()
   }, [isDarkMode])
 
-  // Toggle theme function
   const toggleTheme = () => {
     setIsDarkMode((prevMode) => !prevMode)
   }
 
-  // Theme colors
   const theme = {
     isDarkMode,
     colors: isDarkMode
@@ -130,7 +127,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return <ThemeContext.Provider value={{ ...theme, toggleTheme }}>{children}</ThemeContext.Provider>
 }
 
-// Custom hook to use the theme context
 export const useTheme = () => {
   const context = useContext(ThemeContext)
   if (!context) {

@@ -220,7 +220,6 @@ const Header = ({
           <Ionicons name="chevron-down" size={16} style={styles.dropdownIcon} />
         </TouchableOpacity>
 
-        {/* Using the base button style */}
         <TouchableOpacity style={[styles.button, styles.searchButton, isSmallScreen && styles.smallButton]}>
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
@@ -228,13 +227,11 @@ const Header = ({
 
       {/* Right Section */}
       <View style={[styles.headerRight, isSmallScreen && styles.smallHeaderRight]}>
-         {/* Using the base button style */}
         <TouchableOpacity
           style={[styles.button, styles.analyticsButton, isSmallScreen && styles.smallButton]}
           onPress={navigateToAnalytics}
         >
           <Text style={styles.analyticsButtonText}>
-            {/* Text can change based on screen size if desired */}
             Analytics
           </Text>
         </TouchableOpacity>

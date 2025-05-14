@@ -1,4 +1,3 @@
-// components/HamburgerMenu.js
 import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -21,7 +20,6 @@ const HamburgerMenu = ({ navigation }) => {
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Analytics')}>
             <Text>Analytics</Text>
           </TouchableOpacity>
-          {/* Add more menu items as needed */}
         </View>
       )}
     </View>
