@@ -28,26 +28,37 @@ const { width } = Dimensions.get("window")
 
 const generateTimeSlots = () => {
   const timeSlots = []
-  for (let hour = 8; hour < 20; hour++) {
-    const period = hour >= 12 ? "PM" : "AM"
-    const displayHour = hour > 12 ? hour - 12 : hour
+  const startHour = 5 // 11:00 AM
+  const totalSlots = 48 // 30-minute intervals over 24 hours
+  let currentHour = startHour
+  let currentMinute = 0
 
+  for (let i = 0; i < totalSlots; i++) {
+    const hour24 = currentHour % 24
+    const period = hour24 >= 12 ? "PM" : "AM"
+    let displayHour = hour24 % 12
+    if (displayHour === 0) displayHour = 12
+
+    const displayMinute = currentMinute === 0 ? "00" : "30"
+    const timeLabel = `${displayHour}:${displayMinute} ${period}`
 
     timeSlots.push({
-      id: `slot-${hour}-00`,
-      time: `${displayHour}:00 ${period}`,
-      displayText: `${displayHour}:00 ${period}`,
+      id: `slot-${i}`,
+      time: timeLabel,
+      displayText: timeLabel,
     })
 
-    timeSlots.push({
-      id: `slot-${hour}-30`,
-      time: `${displayHour}:30 ${period}`,
-      displayText: `${displayHour}:30 ${period}`,
-    })
+    // Increment 30 minutes
+    currentMinute += 30
+    if (currentMinute >= 60) {
+      currentMinute = 0
+      currentHour++
+    }
   }
 
   return timeSlots
 }
+
 
 export default function TimeSlotScreen() {
   const { colors, isDarkMode, toggleTheme } = useTheme()
@@ -481,7 +492,7 @@ export default function TimeSlotScreen() {
               data={timeSlots}
               renderItem={renderTimeSlot}
               keyExtractor={(item) => item.id}
-              numColumns={2}
+              numColumns={3}
               contentContainerStyle={styles.timeSlotsList}
             />
           </View>
